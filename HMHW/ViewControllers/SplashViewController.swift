@@ -23,9 +23,9 @@ class SplashViewController: HViewController {
         super.viewDidAppear(animated)
 
         PerrFuncs.runOnUiThread(afterDelay: 3) { [unowned self] in // Using 'unowned' for better performance (instead of using weak), plus, there is no way this 'self' will be released somehow.
-            self.mainSplashImageView.animateBounce { [unowned self] _ in
+            self.mainSplashImageView.animateScaleAndFadeOut(scaleSize: 30, { [unowned self] _ in
                 self.present(self.mainViewController, animated: true, completion: nil)
-            }
+            })
         }
     }
     override func didReceiveMemoryWarning() {

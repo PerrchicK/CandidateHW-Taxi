@@ -9,35 +9,36 @@
 import Foundation
 
 class ClosureTimer {
-    let timer: Timer
-    class Executor {
-        let block: CompletionClosure<Any?>
+    var timer: Timer?
+    let block: CompletionClosure<Any?>
+    /// Inspired from: http://blog.hourglasslab.com/2017/04/19/timer%20on%20background%20thread/
+    let queue: DispatchQueue
+
+    init(afterDelay seconds: TimeInterval = 0.0, userInfo: Any?, queue :DispatchQueue = DispatchQueue.main, repeats: Bool, block: @escaping CompletionClosure<Any>) {
         
-        init(block: @escaping CompletionClosure<Any>) {
-            self.block = block
-        }
-        
-        @objc func timerFired(_ timer: Timer) {
-            block(timer.userInfo as AnyObject?)
+        self.queue = queue
+        self.block = block
+
+        queue.async { [unowned self] in
+            let currentRunLoop = RunLoop.current
+            let timer = Timer.scheduledTimer(timeInterval: seconds, target: self, selector: #selector(ClosureTimer.timerFired(_:)), userInfo: userInfo, repeats: repeats)
+            currentRunLoop.add(timer, forMode: .commonModes)
+            currentRunLoop.run()
+            self.timer = timer
         }
     }
-    
-    init(afterDelay seconds: TimeInterval = 0.0, userInfo: Any?,repeats: Bool, block: @escaping CompletionClosure<Any>) {
-        
-        let executor = Executor(block: block)
-        
-        timer = Timer.scheduledTimer(timeInterval: seconds, target: executor, selector: #selector(Executor.timerFired(_:)), userInfo: userInfo, repeats: repeats)
-        
+
+    @objc func timerFired(_ timer: Timer) {
+        self.block(timer.userInfo as AnyObject?)
     }
-    
+
     func invalidate() {
-        timer.invalidate()
+        timer?.invalidate()
     }
     
     @discardableResult
     static func runBlockAfterDelay(afterDelay seconds: Double, repeats: Bool = false, userInfo: Any? = nil, onQueue: DispatchQueue = DispatchQueue.main, block: @escaping CompletionClosure<Any>) -> ClosureTimer {
-        let timer = ClosureTimer(afterDelay: seconds, userInfo: userInfo, repeats: repeats, block: block)
-        
+        let timer = ClosureTimer(afterDelay: seconds, userInfo: userInfo, queue: onQueue, repeats: repeats, block: block)
         return timer
     }
 }

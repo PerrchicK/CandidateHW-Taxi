@@ -14,6 +14,7 @@ class CabOrderInfo {
     let company: CabStation
 
     private var _eta: TimeInterval?
+    /// The ETA timestamp, in seconds(!). When working with external "players" in the product, consider using a Int64 for timestamp in milliseconds
     var eta: TimeInterval {
         get {
             return _eta ?? CabOrderInfo.UnknownETA

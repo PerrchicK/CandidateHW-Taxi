@@ -37,6 +37,9 @@ public func 📕(_ logMessage: Any, file:String = #file, function:String = #func
 
 // MARK: - A service class that has some usefull methods
 open class PerrFuncs {
+    static var currentTimstamp: TimeInterval {
+        return Date().timeIntervalSince1970
+    }
 
     // dispatch block on main queue
     static public func runOnUiThread(afterDelay seconds: Double = 0.0, block: @escaping ()->()) {
@@ -361,7 +364,7 @@ extension UIView {
         noAnimation.isAdditive = true
         noAnimation.isRemovedOnCompletion = false
 
-        self.layer.add(noAnimation, forKey: Configurations.Keys.NoNoAnimation) // shake animation
+        self.layer.add(noAnimation, forKey: "NoNoAnimation") // shake animation
     }
 
     public func animateMoveToCenter(ofX x: CGFloat,andY y: CGFloat, duration: TimeInterval = 1, completion: ((Bool) -> Void)? = nil) {
@@ -488,7 +491,7 @@ extension UIView {
     @discardableResult
     func onClick(_ onClickClosure: @escaping OnTapRecognizedClosure) -> OnClickListener {
         self.isUserInteractionEnabled = true
-        // Ron, Don't worry abut memory leaks here, I checked it already. This doesn't create retain-cycles, guaranteed :)
+        // Don't worry abut memory leaks here, I checked it already. This doesn't create retain-cycles, guaranteed :)
         // This 'onClick' is inspired from the Android development and it's of course a matter of taste, I personally find it convenient.
         // Of course it's not a problem to align with the corporate coding convention.
         let tapGestureRecognizer = OnClickListener(target: self, action: #selector(onTapRecognized(_:)), closure: onClickClosure)

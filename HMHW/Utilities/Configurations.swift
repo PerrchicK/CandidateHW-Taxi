@@ -12,22 +12,14 @@ class Configurations {
     static let shared = Configurations()
     
     struct Constants {
-        static let GitHubLink: String = "https://github.com/PerrchicK/iOS-JobInterviewHW2.0"
+        static let GitHubLink: String = "https://github.com/PerrchicK/CandidateHW-Taxi"
     }
     
-    struct Keys {
-        static let NoNoAnimation: String                = "noAnimation" // not using inferred on purpose, to help Swift compiler
-        struct Persistency {
-            static let PermissionRequestCounter: String = "PermissionRequestCounter"
-            static let LastCrash: String                = "last crash"
-        }
-    }
-    
-    private(set) var maximumWaitingTimeInMinutes: Int
     private(set) var cabsCount: Int
+    private(set) var refreshInterval: TimeInterval
     
     init() {
-        maximumWaitingTimeInMinutes = 30
-        cabsCount = 50
+        cabsCount = 20
+        refreshInterval = 5
     }
 }

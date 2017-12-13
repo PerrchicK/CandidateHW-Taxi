@@ -11,23 +11,25 @@ import UIKit
 class DataManager {
     static let shared = DataManager()
 
+    private(set) var cabsList: [CabOrderInfo]
+    var timer: ClosureTimer?
+
+    lazy var backgroundQueue: DispatchQueue = DispatchQueue(label: "Timer", qos: .background, attributes: .concurrent)
+
     lazy var stations: [CabStation] = {
         var stations = [CabStation]()
         stations.append(CabStation(companyName: "Gett", companyLogoUrl: "Gett"))
+        stations.append(CabStation(companyName: "Perry's", companyLogoUrl: "cab-stub-2"))
         stations.append(CabStation(companyName: "Perry & Co.", companyLogoUrl: "cab-stub"))
-        stations.append(CabStation(companyName: "Ha Castle", companyLogoUrl: "hakastel"))
-        stations.append(CabStation(companyName: "Ha Shekem", companyLogoUrl: "hashekem"))
+        stations.append(CabStation(companyName: "Gordon", companyLogoUrl: "gordon"))
+        stations.append(CabStation(companyName: "Azrieli", companyLogoUrl: "azrieli"))
+        stations.append(CabStation(companyName: "Castle", companyLogoUrl: "hakastel"))
+        stations.append(CabStation(companyName: "Shekem", companyLogoUrl: "hashekem"))
 
         return stations
     }()
-    var cabsList: [CabOrderInfo]
-    let awakeningTime: TimeInterval
-    var elapsedTime: TimeInterval {
-        return Date().timeIntervalSince1970 - awakeningTime
-    }
 
     private init() {
-        awakeningTime = Date().timeIntervalSince1970
         cabsList = []
         // https://developer.apple.com/documentation/swift/array/1538966-reservecapacity
         cabsList.reserveCapacity(Configurations.shared.cabsCount)
@@ -35,13 +37,44 @@ class DataManager {
         for i in 0..<Configurations.shared.cabsCount {
             let random = PerrFuncs.random(from: i, to: 1000)
             let cabOrderInfo = CabOrderInfo(company: stations[random % stations.count])
-            cabOrderInfo.eta = TimeInterval(random)
+            cabOrderInfo.eta = Date(timeIntervalSinceNow: TimeInterval(random)).timeIntervalSince1970
             cabsList.append(cabOrderInfo)
+        }
+
+        cabsList.sort(by: { $0.eta < $1.eta } )
+
+        beginEndlessUpdates()
+        
+        NotificationCenter.default.addObserver(self, selector: #selector(applicationWillResignActive(notification:)), name: NSNotification.Name.UIApplicationWillResignActive, object: nil)
+
+        NotificationCenter.default.addObserver(self, selector: #selector(applicationDidBecomeActive(notification:)), name: NSNotification.Name.UIApplicationDidBecomeActive, object: nil)
+    }
+
+    @objc func applicationDidBecomeActive(notification: Notification) {
+        beginEndlessUpdates()
+    }
+
+    @objc func applicationWillResignActive(notification: Notification) {
+        timer?.invalidate()
+        timer = nil
+    }
+
+    func beginEndlessUpdates() {
+        // Prevent duplicated calls
+        guard UIApplication.shared.applicationState == .active && timer == nil else { return }
+
+        timer = ClosureTimer.runBlockAfterDelay(afterDelay: Configurations.shared.refreshInterval, repeats: true, userInfo: nil, onQueue: backgroundQueue) { [weak self] _ in
+            self?.refreshData() // Mocks up an update, may arrive by: polling result, update from socket, etc.
         }
     }
 
-    func getTaxi(taxiIndex: Int) -> CabOrderInfo {
-        return cabsList[taxiIndex]
+    func refreshData() {
+        let currentTimstamp: TimeInterval = PerrFuncs.currentTimstamp
+        cabsList = cabsList.filter( { $0.eta - currentTimstamp > 0 } )
+
+        DispatchQueue.main.async {
+            NotificationCenter.default.post(name: NSNotification.Name.DataRefreshed, object: nil)
+        }
     }
 }
 
@@ -72,4 +105,8 @@ extension UserDefaults {
         
         return defaultValue
     }
+}
+
+extension NSNotification.Name {
+    static let DataRefreshed: NSNotification.Name = NSNotification.Name(rawValue: "DataRefreshed")
 }
