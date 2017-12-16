@@ -63,8 +63,14 @@ class DataManager {
         // Prevent duplicated calls
         guard UIApplication.shared.applicationState == .active && timer == nil else { return }
 
+        // Mocks up an update, may arrive by: polling result, update from socket, etc.
         timer = ClosureTimer.runBlockAfterDelay(afterDelay: Configurations.shared.refreshInterval, repeats: true, userInfo: nil, onQueue: backgroundQueue) { [weak self] _ in
-            self?.refreshData() // Mocks up an update, may arrive by: polling result, update from socket, etc.
+            guard (self?.cabsList.count).or(0) > 0 else {
+                self?.timer?.cancel()
+                return
+            }
+
+            self?.refreshData()
         }
     }
 

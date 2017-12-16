@@ -7,11 +7,35 @@
 //
 
 import UIKit
+protocol CabTableViewCellDelegate: class {
+    func cabTableViewCellDidChangedMinute(cell: CabTableViewCell)
+}
 
 class CabTableViewCell: HMTableViewCell<CabOrderInfo> {
     static let Identifier: String = "CabTableViewCell"
     static let CellHeight: CGFloat = 80
     
+    weak var delegate: CabTableViewCellDelegate?
+    var elapsedSeconds: TimeInterval! {
+        didSet {
+            let elapsedMinutes = elapsedSeconds.toMinutes()
+            let elapsedTimeTitle: String
+            if elapsedMinutes > 0 {
+                elapsedTimeTitle = "\(elapsedMinutes)m"
+            } else {
+                elapsedTimeTitle = String(format: "%.0fs", elapsedSeconds)
+            }
+            
+            if etaLabel.text == elapsedTimeTitle { return }
+
+            if (etaLabel.text?.count).or(0) > 0 && elapsedMinutes > 0 { // Detect changes
+                self.delegate?.cabTableViewCellDidChangedMinute(cell: self)
+            }
+            
+            etaLabel.text = elapsedTimeTitle
+        }
+    }
+
     @IBOutlet weak var etaLabel: UILabel!
     @IBOutlet weak var companyNameLabel: UILabel!
     @IBOutlet weak var companyLogoImageView: UIImageView!
@@ -23,31 +47,19 @@ class CabTableViewCell: HMTableViewCell<CabOrderInfo> {
 
     override func cleanup() {
         companyLogoImageView.image = nil
+        etaLabel.text = ""
+
         super.cleanup()
     }
 
     func refreshUi() {
         guard let data = data else { return }
 
-        let elapsedSeconds = data.eta.elapsedSeconds
-        let elapsedMinutes = elapsedSeconds.toMinutes()
-        let elapsedTimeTitle: String
-        if elapsedMinutes > 0 {
-            elapsedTimeTitle = "\(elapsedMinutes)m"
-        } else {
-            elapsedTimeTitle = String(format: "%.0fs", elapsedSeconds)
-        }
-
-        if etaLabel.text == elapsedTimeTitle { return }
-
-        etaLabel.text = elapsedTimeTitle
-//        etaLabel.animateFade(fadeIn: false, duration: 0.4) { [weak self] _ in
-//            self?.etaLabel.text = elapsedTimeTitle
-//            self?.etaLabel.animateFade(fadeIn: true, duration: 0.4)
-//        }
+        self.elapsedSeconds = data.eta.elapsedSeconds
     }
 
     override func configure(data: CabOrderInfo) {
+        cleanup()
         super.configure(data: data)
 
         // In a real project, the image will not be stored locally of course (in most cases), this is the place initiate an async image fetch operation, and do a relevance check of the image on callback.

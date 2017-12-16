@@ -273,6 +273,7 @@ extension UIColor {
 }
 
 extension UIView {
+    // Inspired from: https://stackoverflow.com/questions/25513271/how-to-initialize--a-custom-uiview-class-with-a-xib-file-in-swift
     class func instantiateFromNib<T>(xibFileName: String) -> T {
         return (UINib(nibName: xibFileName, bundle: nil).instantiate(withOwner: nil, options: nil).first as! T)
     }

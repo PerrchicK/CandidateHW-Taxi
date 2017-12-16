@@ -8,7 +8,7 @@
 
 import UIKit
 
-class MainViewController: HViewController {
+class MainViewController: HViewController, CabTableViewCellDelegate {
 
     @IBOutlet weak var toggleListButton: UIButton!
     @IBOutlet weak var cabsListTableView: UITableView!
@@ -73,16 +73,20 @@ class MainViewController: HViewController {
         guard elapsedSeconds > 0 else { return 0 }
         return elapsedSeconds.toMinutes()
     }
-    
 
     func reloadData() {
         let _cabsList: [CabOrderInfo] = Array(DataManager.shared.cabsList)
 
+        collapsedSectionState.removeAll()
         cabsCollection.removeAll()
 
         for cabInfo in _cabsList {
             let section = key(forTimestamp: cabInfo.eta)
-            cabsCollection[section] = (cabsCollection[section] ?? []) // create new array if needed
+            if cabsCollection[section] == nil {
+                // Create new array if needed
+                cabsCollection[section] = []
+            }
+
             cabsCollection[section]?.append(cabInfo)
         }
 
@@ -91,17 +95,20 @@ class MainViewController: HViewController {
 
     @objc func onDataRefreshed(notification: Notification) {
         let counts = cabsCollection.values.flatMap( { $0.count } )
-        var size = 0
-        counts.forEach( { size = size + $0 } )
-        if DataManager.shared.cabsList.count != size {
-            reloadData()
-        } else {
-//            reloadData()
+        let sum: Int = counts.reduce(0, { $0 + $1 })
+
+        if DataManager.shared.cabsList.count == sum {
             cabsListTableView.visibleCells.forEach( { ($0 as? CabTableViewCell)?.refreshUi() } )
+        } else {
+            reloadData()
         }
     }
-}
 
+    //MARK:- CabTableViewCellDelegate
+    func cabTableViewCellDidChangedMinute(cell: CabTableViewCell) {
+        reloadData()
+    }
+}
 
 extension MainViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
@@ -117,7 +124,8 @@ extension MainViewController: UITableViewDelegate {
 extension MainViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell: CabTableViewCell = tableView.dequeueReusableCell(withIdentifier: CabTableViewCell.Identifier, for: indexPath) as! CabTableViewCell// Using force unwrap here on purpose, if the app crashes it's a development issue (partial implementation etc.), so in cases like that it should crash.
-        
+
+        cell.delegate = self
         if let cabs = cabsCollection[indexPath.section] {
             let cab = cabs[indexPath.row]
             cell.configure(data: cab)
@@ -141,7 +149,7 @@ extension MainViewController: UITableViewDataSource {
 
         let isCollapsed = (collapsedSectionState[section]).or(false)
 
-        return "\(isCollapsed ? "+" : "-") \(eta > 0 ? "\(eta) minutes" : "seconds")"
+        return "\(isCollapsed ? "+" : "-") \(eta > 0 ? "\(eta) minute\(eta == 1 ? "" : "s")" : "seconds")"
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -149,9 +157,12 @@ extension MainViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let tableViewHeader = tableView.dequeueReusableHeaderFooterView(withIdentifier: "it doesn't really matter in this specific project").or(UITableViewHeaderFooterView())
+        var tableViewHeader = tableView.dequeueReusableHeaderFooterView(withIdentifier: "it doesn't really matter in this specific project")
+        if tableViewHeader == nil {
+            tableViewHeader = UITableViewHeaderFooterView()
+        }
 
-        tableViewHeader.onClick({ [weak self] regognizer in
+        tableViewHeader?.onClick({ [weak self] _ in
             guard let strongSelf = self else { return }
 
             strongSelf.collapsedSectionState[section] = !(strongSelf.collapsedSectionState[section] ?? false)
