@@ -22,6 +22,7 @@ class ClosureTimer {
         queue.async { [unowned self] in
             let currentRunLoop = RunLoop.current
             let timer = Timer.scheduledTimer(timeInterval: seconds, target: self, selector: #selector(ClosureTimer.timerFired(_:)), userInfo: userInfo, repeats: repeats)
+            // https://developer.apple.com/documentation/foundation/runloop/1418468-add
             currentRunLoop.add(timer, forMode: .commonModes)
             currentRunLoop.run()
             self.timer = timer
