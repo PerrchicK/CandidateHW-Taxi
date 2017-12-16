@@ -20,6 +20,7 @@ class MainViewController: HViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
+        cabsListTableView.bounces = false
         cabsListTableView.getRoundedCornered()
         cabsListTableView.layer.borderWidth = 1
         cabsListTableView.layer.borderColor = UIColor.black.cgColor
@@ -80,11 +81,12 @@ class MainViewController: HViewController {
         cabsCollection.removeAll()
 
         for cabInfo in _cabsList {
-            cabsCollection[key(forTimestamp: cabInfo.eta)] = (cabsCollection[key(forTimestamp: cabInfo.eta)] ?? []) // create new array if needed
-            cabsCollection[key(forTimestamp: cabInfo.eta)]?.append(cabInfo)
+            let section = key(forTimestamp: cabInfo.eta)
+            cabsCollection[section] = (cabsCollection[section] ?? []) // create new array if needed
+            cabsCollection[section]?.append(cabInfo)
         }
 
-        cabsListTableView.reloadData() // insert / delete
+        cabsListTableView.reloadData()
     }
 
     @objc func onDataRefreshed(notification: Notification) {
@@ -94,8 +96,8 @@ class MainViewController: HViewController {
         if DataManager.shared.cabsList.count != size {
             reloadData()
         } else {
-            reloadData()
-            //cabsListTableView.visibleCells.forEach( { ($0 as? CabTableViewCell)?.refreshUi() } )
+//            reloadData()
+            cabsListTableView.visibleCells.forEach( { ($0 as? CabTableViewCell)?.refreshUi() } )
         }
     }
 }
@@ -129,16 +131,15 @@ extension MainViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        //        guard let cabs = cabsCollection[indexPath.section] else { return 0 }
-        
         return (collapsedSectionState[indexPath.section]).or(false) ? 0 : CabTableViewCell.CellHeight // UITableViewAutomaticDimension?
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
-        guard let cabInfo = cabsCollection[section]?.first else { return "" }
-        let eta = cabInfo.eta.elapsedSeconds.toMinutes()
+        let eta = section
 
-        return "\(eta > 0 ? "\(eta) minutes" : "seconds")"
+        let isCollapsed = (collapsedSectionState[section]).or(false)
+
+        return "\(isCollapsed ? "+" : "-") \(eta > 0 ? "\(eta) minutes" : "seconds")"
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
@@ -146,18 +147,16 @@ extension MainViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let tableViewHeader: CollapsibleTableViewHeader = (tableView.dequeueReusableHeaderFooterView(withIdentifier: CollapsibleTableViewHeader.Identifier) as? CollapsibleTableViewHeader).or(CollapsibleTableViewHeader())
+        let tableViewHeader = tableView.dequeueReusableHeaderFooterView(withIdentifier: "it doesn't really matter in this project").or(UITableViewHeaderFooterView())
 
-        tableViewHeader.onClick({ [weak self] _ in
+        tableViewHeader.onClick({ [weak self] regognizer in
             guard let strongSelf = self else { return }
+
             strongSelf.collapsedSectionState[section] = !(strongSelf.collapsedSectionState[section] ?? false)
-            strongSelf.reloadData()
+            strongSelf.cabsListTableView.reloadSections(IndexSet(integer: section), with: UITableViewRowAnimation.automatic)
         })
 
         return tableViewHeader
     }
 }
 
-class CollapsibleTableViewHeader: UITableViewHeaderFooterView {
-    static let Identifier = "CollapsibleTableViewHeaderIdentifier"
-}
