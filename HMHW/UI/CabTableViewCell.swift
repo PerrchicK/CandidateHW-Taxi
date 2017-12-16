@@ -28,7 +28,9 @@ class CabTableViewCell: HMTableViewCell<CabOrderInfo> {
             
             if etaLabel.text == elapsedTimeTitle { return }
 
-            if (etaLabel.text?.count).or(0) > 0 && elapsedMinutes > 0 { // Detect changes
+            let didTransitionToSeconds = elapsedSeconds < 60 && oldValue >= 60
+            let didChangeMinute = elapsedMinutes > 0 || didTransitionToSeconds
+            if (etaLabel.text?.count).or(0) > 0 && didChangeMinute { // Detect changes
                 self.delegate?.cabTableViewCellDidChangedMinute(cell: self)
             }
             
