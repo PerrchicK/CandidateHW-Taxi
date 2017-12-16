@@ -55,7 +55,7 @@ class DataManager {
     }
 
     @objc func applicationWillResignActive(notification: Notification) {
-        timer?.invalidate()
+        timer?.cancel()
         timer = nil
     }
 

@@ -8,12 +8,6 @@
 
 import UIKit
 
-extension IHMTableViewCell {
-    func prepareForReuse() {
-        cleanup()
-    }
-}
-
 protocol IHMTableViewCell where Self: UITableViewCell {
     associatedtype T
 
@@ -24,12 +18,14 @@ protocol IHMTableViewCell where Self: UITableViewCell {
 class HMTableViewCell<U>: UITableViewCell, IHMTableViewCell {
     typealias T = U
 
+    private(set) var data: U?
+
     func configure(data: U) {
-        fatalError("should be implemented by children")
+        self.data = data
     }
 
     func cleanup() {
-        fatalError("should be implemented by children")
+        data = nil
     }
 
     override func prepareForReuse() {

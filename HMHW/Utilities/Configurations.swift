@@ -20,6 +20,6 @@ class Configurations {
     
     init() {
         cabsCount = 20
-        refreshInterval = 5
+        refreshInterval = 1
     }
 }

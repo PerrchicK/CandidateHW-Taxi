@@ -11,7 +11,7 @@ import CoreLocation
 
 // MARK: - "macros" (... like)
 
-public typealias CompletionClosure<T> = ((T) -> Void)
+public typealias CallbackClosure<T> = ((T) -> Void)
 public typealias PredicateClosure<T> = ((T) -> Bool)
 
 func WIDTH(_ frame: CGRect?) -> CGFloat { return frame == nil ? 0 : (frame?.size.width)! }
@@ -507,6 +507,10 @@ extension UIView {
             tapGestureRecognizer.isEnabled = false
         }
 
+        if let onClickListeners = gestureRecognizers?.filter( { $0 is OnClickListener } ), let onClickListener = onClickListeners.first {
+            removeGestureRecognizer(onClickListener)
+        }
+
         addGestureRecognizer(tapGestureRecognizer)
         return tapGestureRecognizer
     }
@@ -525,7 +529,7 @@ extension UIView {
     }
 
     @discardableResult
-    func onDrag(predicateClosure: PredicateClosure<UIView>? = nil, onDragClosure: @escaping CompletionClosure<CGPoint>) -> OnPanListener {
+    func onDrag(predicateClosure: PredicateClosure<UIView>? = nil, onDragClosure: @escaping CallbackClosure<CGPoint>) -> OnPanListener {
         return onPan { panGestureRecognizer in
             guard let draggedView = panGestureRecognizer.view, let superview = draggedView.superview, (predicateClosure?(self)).or(true), let onPanListener = panGestureRecognizer as? OnPanListener else { return }
             let locationOfTouch = panGestureRecognizer.location(in: superview)

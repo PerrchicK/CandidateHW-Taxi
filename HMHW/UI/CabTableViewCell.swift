@@ -16,7 +16,6 @@ class CabTableViewCell: HMTableViewCell<CabOrderInfo> {
     @IBOutlet weak var companyNameLabel: UILabel!
     @IBOutlet weak var companyLogoImageView: UIImageView!
 
-    private weak var data: CabOrderInfo?
     override func awakeFromNib() {
         etaLabel.text = nil
         companyNameLabel.text = nil
@@ -24,13 +23,13 @@ class CabTableViewCell: HMTableViewCell<CabOrderInfo> {
 
     override func cleanup() {
         companyLogoImageView.image = nil
-        data = nil
+        super.cleanup()
     }
 
     func refreshUi() {
         guard let data = data else { return }
 
-        let elapsedSeconds = data.eta - PerrFuncs.currentTimstamp
+        let elapsedSeconds = data.eta.elapsedSeconds
         let elapsedMinutes = elapsedSeconds.toMinutes()
         let elapsedTimeTitle: String
         if elapsedMinutes > 0 {
@@ -49,8 +48,9 @@ class CabTableViewCell: HMTableViewCell<CabOrderInfo> {
     }
 
     override func configure(data: CabOrderInfo) {
+        super.configure(data: data)
+
         // In a real project, the image will not be stored locally of course (in most cases), this is the place initiate an async image fetch operation, and do a relevance check of the image on callback.
-        self.data = data
         companyLogoImageView.image = UIImage(named: data.company.companyLogoUrl)
         companyNameLabel.text = data.company.companyName
         refreshUi()
@@ -66,6 +66,10 @@ extension TimeInterval {
 
     func toMinutes() -> Int {
         return Int(self) / 60
+    }
+
+    var elapsedSeconds: TimeInterval {
+        return self - PerrFuncs.currentTimstamp
     }
 }
 

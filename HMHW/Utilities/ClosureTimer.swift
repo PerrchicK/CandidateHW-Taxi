@@ -10,11 +10,11 @@ import Foundation
 
 class ClosureTimer {
     var timer: Timer?
-    let block: CompletionClosure<Any?>
+    let block: CallbackClosure<Any?>
     /// Inspired from: http://blog.hourglasslab.com/2017/04/19/timer%20on%20background%20thread/
     let queue: DispatchQueue
 
-    init(afterDelay seconds: TimeInterval = 0.0, userInfo: Any?, queue :DispatchQueue = DispatchQueue.main, repeats: Bool, block: @escaping CompletionClosure<Any>) {
+    init(afterDelay seconds: TimeInterval = 0.0, userInfo: Any?, queue :DispatchQueue = DispatchQueue.main, repeats: Bool, block: @escaping CallbackClosure<Any>) {
         
         self.queue = queue
         self.block = block
@@ -29,15 +29,15 @@ class ClosureTimer {
     }
 
     @objc func timerFired(_ timer: Timer) {
-        self.block(timer.userInfo as AnyObject?)
+        block(timer.userInfo)
     }
 
-    func invalidate() {
+    func cancel() {
         timer?.invalidate()
     }
     
     @discardableResult
-    static func runBlockAfterDelay(afterDelay seconds: Double, repeats: Bool = false, userInfo: Any? = nil, onQueue: DispatchQueue = DispatchQueue.main, block: @escaping CompletionClosure<Any>) -> ClosureTimer {
+    static func runBlockAfterDelay(afterDelay seconds: Double, repeats: Bool = false, userInfo: Any? = nil, onQueue: DispatchQueue = DispatchQueue.main, block: @escaping CallbackClosure<Any>) -> ClosureTimer {
         let timer = ClosureTimer(afterDelay: seconds, userInfo: userInfo, queue: onQueue, repeats: repeats, block: block)
         return timer
     }

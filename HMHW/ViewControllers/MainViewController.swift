@@ -8,13 +8,14 @@
 
 import UIKit
 
-class MainViewController: HViewController, UITableViewDelegate, UITableViewDataSource {
+class MainViewController: HViewController {
 
     @IBOutlet weak var toggleListButton: UIButton!
     @IBOutlet weak var cabsListTableView: UITableView!
     @IBOutlet weak var tableMarginTopConstraint: NSLayoutConstraint!
 
-    var cabsList: [CabOrderInfo]?
+    lazy var collapsedSectionState: [Int:Bool] = [:]
+    lazy var cabsCollection: [Int:[CabOrderInfo]] = [:]
 
     override func viewDidLoad() {
         super.viewDidLoad()
@@ -51,7 +52,7 @@ class MainViewController: HViewController, UITableViewDelegate, UITableViewDataS
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
 
-        cabsList = DataManager.shared.cabsList
+        reloadData()
     }
     
     override func viewDidAppear(_ animated: Bool) {
@@ -66,39 +67,97 @@ class MainViewController: HViewController, UITableViewDelegate, UITableViewDataS
         NotificationCenter.default.removeObserver(self)
     }
 
-    @objc func onDataRefreshed(notification: Notification) {
-        if DataManager.shared.cabsList.count != cabsList?.count {
-            cabsList = DataManager.shared.cabsList
-            cabsListTableView.reloadData() // insert / delete
-        } else {
-            cabsListTableView.visibleCells.forEach( { ($0 as? CabTableViewCell)?.refreshUi() } )
+    func key(forTimestamp timestamp: TimeInterval) -> Int {
+        let elapsedSeconds = timestamp.elapsedSeconds
+        guard elapsedSeconds > 0 else { return 0 }
+        return elapsedSeconds.toMinutes()
+    }
+    
+
+    func reloadData() {
+        let _cabsList: [CabOrderInfo] = Array(DataManager.shared.cabsList)
+
+        cabsCollection.removeAll()
+
+        for cabInfo in _cabsList {
+            cabsCollection[key(forTimestamp: cabInfo.eta)] = (cabsCollection[key(forTimestamp: cabInfo.eta)] ?? []) // create new array if needed
+            cabsCollection[key(forTimestamp: cabInfo.eta)]?.append(cabInfo)
         }
+
+        cabsListTableView.reloadData() // insert / delete
     }
 
-    //MARK: - UITableViewDelegate
+    @objc func onDataRefreshed(notification: Notification) {
+        let counts = cabsCollection.values.flatMap( { $0.count } )
+        var size = 0
+        counts.forEach( { size = size + $0 } )
+        if DataManager.shared.cabsList.count != size {
+            reloadData()
+        } else {
+            reloadData()
+            //cabsListTableView.visibleCells.forEach( { ($0 as? CabTableViewCell)?.refreshUi() } )
+        }
+    }
+}
+
+
+extension MainViewController: UITableViewDelegate {
     func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
         tableView.deselectRow(at: indexPath, animated: true)
-
-        if let cab = cabsList?[indexPath.row] {
+        
+        if let cabs = cabsCollection[indexPath.section] {
+            let cab = cabs[indexPath.row]
             ToastMessage.show(messageText: (cab.eta - PerrFuncs.currentTimstamp).toTimeString(format: "mm:ss"))
         }
     }
-    
-    //MARK: - UITableViewDataSource
+}
+
+extension MainViewController: UITableViewDataSource {
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell: CabTableViewCell = tableView.dequeueReusableCell(withIdentifier: CabTableViewCell.Identifier, for: indexPath) as! CabTableViewCell// Using force unwrap here on purpose, if the app crashes it's a development issue (partial implementation etc.), so in cases like that it should crash.
-
-        if let cab = cabsList?[indexPath.row] {
+        
+        if let cabs = cabsCollection[indexPath.section] {
+            let cab = cabs[indexPath.row]
             cell.configure(data: cab)
         }
+        
         return cell
     }
     
+    func numberOfSections(in tableView: UITableView) -> Int {
+        return cabsCollection.filter( { $0.value.count > 0 } ).count
+    }
+    
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return CabTableViewCell.CellHeight
+        //        guard let cabs = cabsCollection[indexPath.section] else { return 0 }
+        
+        return (collapsedSectionState[indexPath.section]).or(false) ? 0 : CabTableViewCell.CellHeight // UITableViewAutomaticDimension?
+    }
+    
+    func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
+        guard let cabInfo = cabsCollection[section]?.first else { return "" }
+        let eta = cabInfo.eta.elapsedSeconds.toMinutes()
+
+        return "\(eta > 0 ? "\(eta) minutes" : "seconds")"
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        return (cabsList?.count).or(0)
+        return (cabsCollection[section]?.count).or(0)
     }
+    
+    func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
+        let tableViewHeader: CollapsibleTableViewHeader = (tableView.dequeueReusableHeaderFooterView(withIdentifier: CollapsibleTableViewHeader.Identifier) as? CollapsibleTableViewHeader).or(CollapsibleTableViewHeader())
+
+        tableViewHeader.onClick({ [weak self] _ in
+            guard let strongSelf = self else { return }
+            strongSelf.collapsedSectionState[section] = !(strongSelf.collapsedSectionState[section] ?? false)
+            strongSelf.reloadData()
+        })
+
+        return tableViewHeader
+    }
+}
+
+class CollapsibleTableViewHeader: UITableViewHeaderFooterView {
+    static let Identifier = "CollapsibleTableViewHeaderIdentifier"
 }
