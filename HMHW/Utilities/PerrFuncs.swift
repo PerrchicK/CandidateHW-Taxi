@@ -273,6 +273,10 @@ extension UIColor {
 }
 
 extension UIView {
+    class func instantiateFromNib<T>(xibFileName: String) -> T {
+        return (UINib(nibName: xibFileName, bundle: nil).instantiate(withOwner: nil, options: nil).first as! T)
+    }
+
     func getRoundedCornered(_ radius: CGFloat = 5) {
         self.layer.cornerRadius = radius
         self.layer.masksToBounds = true

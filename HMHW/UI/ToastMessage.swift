@@ -9,8 +9,7 @@
 import Foundation
 import UIKit
 
-class ToastMessage: NibView {
-
+class ToastMessage: UIView {
     enum ToastMessageLength: TimeInterval {
         case long = 5.0
         case short = 3.0
@@ -24,8 +23,9 @@ class ToastMessage: NibView {
 
         let width = UIScreen.main.bounds.width
         let frame = CGRect(x: 0.0, y: 0.0, width: width, height: width / 2.0)
-        let toastMessage = ToastMessage(frame: frame)
+        let toastMessage: ToastMessage = ToastMessage.instantiateFromNib(xibFileName: "ToastMessage") //ToastMessage(frame: frame)
 
+        toastMessage.frame = frame
         toastMessage.delay = delay.rawValue
         toastMessage.isPresented = false
         appWindow.addSubview(toastMessage)

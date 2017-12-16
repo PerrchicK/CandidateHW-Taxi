@@ -131,7 +131,9 @@ extension MainViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, heightForRowAt indexPath: IndexPath) -> CGFloat {
-        return (collapsedSectionState[indexPath.section]).or(false) ? 0 : CabTableViewCell.CellHeight // UITableViewAutomaticDimension?
+        // Inspired from: https://medium.com/@jeantimex/how-to-implement-collapsible-table-section-in-ios-142e0c6266fd
+
+        return (collapsedSectionState[indexPath.section]).or(false) ? 0 : CabTableViewCell.CellHeight // Consider using UITableViewAutomaticDimension
     }
     
     func tableView(_ tableView: UITableView, titleForHeaderInSection section: Int) -> String? {
@@ -147,7 +149,7 @@ extension MainViewController: UITableViewDataSource {
     }
     
     func tableView(_ tableView: UITableView, viewForHeaderInSection section: Int) -> UIView? {
-        let tableViewHeader = tableView.dequeueReusableHeaderFooterView(withIdentifier: "it doesn't really matter in this project").or(UITableViewHeaderFooterView())
+        let tableViewHeader = tableView.dequeueReusableHeaderFooterView(withIdentifier: "it doesn't really matter in this specific project").or(UITableViewHeaderFooterView())
 
         tableViewHeader.onClick({ [weak self] regognizer in
             guard let strongSelf = self else { return }
@@ -159,4 +161,3 @@ extension MainViewController: UITableViewDataSource {
         return tableViewHeader
     }
 }
-

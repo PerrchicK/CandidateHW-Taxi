@@ -18,7 +18,6 @@
 		75E389FF1FE0883C00FFD8C3 /* ClosureTimer.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E389F61FE0883C00FFD8C3 /* ClosureTimer.swift */; };
 		75E38A011FE0883C00FFD8C3 /* Configurations.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E389F91FE0883C00FFD8C3 /* Configurations.swift */; };
 		75E38A031FE0883C00FFD8C3 /* PerrFuncs.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E389FB1FE0883C00FFD8C3 /* PerrFuncs.swift */; };
-		75E38A0A1FE08F9300FFD8C3 /* NibView.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E38A071FE08F9200FFD8C3 /* NibView.swift */; };
 		75E38A0B1FE08F9300FFD8C3 /* ToastMessage.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E38A081FE08F9200FFD8C3 /* ToastMessage.swift */; };
 		75E38A0C1FE08F9300FFD8C3 /* ToastMessage.xib in Resources */ = {isa = PBXBuildFile; fileRef = 75E38A091FE08F9200FFD8C3 /* ToastMessage.xib */; };
 		75E38A0E1FE08FAB00FFD8C3 /* CabTableViewCell.swift in Sources */ = {isa = PBXBuildFile; fileRef = 75E38A0D1FE08FAB00FFD8C3 /* CabTableViewCell.swift */; };
@@ -42,7 +41,6 @@
 		75E389F61FE0883C00FFD8C3 /* ClosureTimer.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ClosureTimer.swift; sourceTree = "<group>"; };
 		75E389F91FE0883C00FFD8C3 /* Configurations.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = Configurations.swift; sourceTree = "<group>"; };
 		75E389FB1FE0883C00FFD8C3 /* PerrFuncs.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = PerrFuncs.swift; sourceTree = "<group>"; };
-		75E38A071FE08F9200FFD8C3 /* NibView.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = NibView.swift; sourceTree = "<group>"; };
 		75E38A081FE08F9200FFD8C3 /* ToastMessage.swift */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = sourcecode.swift; path = ToastMessage.swift; sourceTree = "<group>"; };
 		75E38A091FE08F9200FFD8C3 /* ToastMessage.xib */ = {isa = PBXFileReference; fileEncoding = 4; lastKnownFileType = file.xib; path = ToastMessage.xib; sourceTree = "<group>"; };
 		75E38A0D1FE08FAB00FFD8C3 /* CabTableViewCell.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CabTableViewCell.swift; sourceTree = "<group>"; };
@@ -119,7 +117,6 @@
 		75E38A061FE08F9200FFD8C3 /* UI */ = {
 			isa = PBXGroup;
 			children = (
-				75E38A071FE08F9200FFD8C3 /* NibView.swift */,
 				75E38A081FE08F9200FFD8C3 /* ToastMessage.swift */,
 				75E38A091FE08F9200FFD8C3 /* ToastMessage.xib */,
 				75E38A0D1FE08FAB00FFD8C3 /* CabTableViewCell.swift */,
@@ -219,7 +216,6 @@
 				75E38A101FE0908100FFD8C3 /* HMTableViewCell.swift in Sources */,
 				75E389E91FE086AF00FFD8C3 /* SplashViewController.swift in Sources */,
 				75E389E71FE086AF00FFD8C3 /* HViewController.swift in Sources */,
-				75E38A0A1FE08F9300FFD8C3 /* NibView.swift in Sources */,
 				75E38A011FE0883C00FFD8C3 /* Configurations.swift in Sources */,
 				75E389FF1FE0883C00FFD8C3 /* ClosureTimer.swift in Sources */,
 				75E38A151FE09D4900FFD8C3 /* CabOrderInfo.swift in Sources */,
