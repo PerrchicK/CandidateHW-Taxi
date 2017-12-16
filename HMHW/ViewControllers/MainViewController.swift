@@ -77,7 +77,6 @@ class MainViewController: HViewController, CabTableViewCellDelegate {
     func reloadData() {
         let _cabsList: [CabOrderInfo] = Array(DataManager.shared.cabsList)
 
-        collapsedSectionState.removeAll()
         cabsCollection.removeAll()
 
         for cabInfo in _cabsList {

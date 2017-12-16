@@ -16,7 +16,7 @@ class CabTableViewCell: HMTableViewCell<CabOrderInfo> {
     static let CellHeight: CGFloat = 80
     
     weak var delegate: CabTableViewCellDelegate?
-    var elapsedSeconds: TimeInterval! {
+    var elapsedSeconds: TimeInterval = 0 {
         didSet {
             let elapsedMinutes = elapsedSeconds.toMinutes()
             let elapsedTimeTitle: String
